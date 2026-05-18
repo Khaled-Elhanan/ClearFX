@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="ClearFX.API/ClearFX.API.csproj" />
+  <Project Path="ClearFX.Application/ClearFX.Application.csproj" />
+  <Project Path="ClearFX.Domain/ClearFX.Domain.csproj" />
+  <Project Path="ClearFX.Infrastructure/ClearFX.Infrastructure.csproj" />
+  <Project Path="ClearFX.IntegrationTests/ClearFX.IntegrationTests.csproj" />
+</Solution>
