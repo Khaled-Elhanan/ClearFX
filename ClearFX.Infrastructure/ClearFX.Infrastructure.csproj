@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <Folder Include="ExternalApis\" />
-    <Folder Include="Repositories\" />
   </ItemGroup>
 
   <PropertyGroup>
