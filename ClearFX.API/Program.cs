@@ -1,10 +1,16 @@
 using System.Text;
+using ClearFX.API.Authorization;
+using ClearFX.API.Middleware;
+using ClearFX.Application.Behaviors;
 using ClearFX.Application.Common;
 using ClearFX.Application.Features.Auth.Commands;
+using ClearFX.Domain.Enums;
 using ClearFX.Domain.Interfaces;
 using ClearFX.Infrastructure.Auth;
 using ClearFX.Infrastructure.Persistence;
 using ClearFX.Infrastructure.Repositories;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -45,6 +51,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly));
+// validation pipleline
+builder.Services.AddValidatorsFromAssembly(typeof(LoginCommand).Assembly);
+builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+
+
 
 // Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
@@ -70,9 +82,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+// Authorization Policies
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(Policies.CanDeposit,       p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Teller)));
+
+    options.AddPolicy(Policies.CanWithdraw,      p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Teller)));
+
+    options.AddPolicy(Policies.CanTransfer,      p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Teller)));
+
+    options.AddPolicy(Policies.CanExchange,      p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Teller)));
+
+    options.AddPolicy(Policies.CanManageRates,   p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager)));
+
+    options.AddPolicy(Policies.CanViewAuditLogs, p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Auditor)));
+
+    options.AddPolicy(Policies.CanManageUsers,   p => p.RequireRole(
+        nameof(UserRole.Admin)));
+});
 
 var app = builder.Build();
+
+// Middleware
+app.UseMiddleware<ExceptionMiddleware>();
+
 
 if (app.Environment.IsDevelopment())
 {
