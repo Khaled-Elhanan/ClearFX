@@ -10,4 +10,4 @@ public record RegisterCommand(
     UserRole Role
 ) : IRequest<RegisterResult>;
 
-public record RegisterResult(Guid UserId, string Email);
+public record RegisterResult(Guid UserId, string Email, string Role);

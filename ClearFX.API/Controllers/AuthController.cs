@@ -1,5 +1,6 @@
 using ClearFX.Application.Features.Auth.Commands;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClearFX.API.Controllers;
@@ -9,6 +10,7 @@ namespace ClearFX.API.Controllers;
 public class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpPost("register")]
+    [Authorize(Policy = "CanManageUsers")] 
     public async Task<IActionResult> Register(RegisterCommand command)
     {
         var result = await mediator.Send(command);
@@ -16,6 +18,7 @@ public class AuthController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(LoginCommand command)
     {
         var result = await mediator.Send(command);

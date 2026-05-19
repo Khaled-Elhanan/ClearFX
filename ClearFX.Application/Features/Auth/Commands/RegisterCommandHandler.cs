@@ -24,6 +24,6 @@ public class RegisterCommandHandler(IRepository<User> userRepo, IUnitOfWork uow)
         await userRepo.AddAsync(user, cancellationToken);
         await uow.SaveChangesAsync(cancellationToken);
 
-        return new RegisterResult(user.Id, user.Email);
+        return new RegisterResult(user.Id, user.Email, user.Role.ToString());
     }
 }

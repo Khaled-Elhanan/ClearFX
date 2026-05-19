@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers + Swagger
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -64,6 +65,7 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
 // Services
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 // JWT Auth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -105,9 +107,23 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy(Policies.CanManageUsers,   p => p.RequireRole(
         nameof(UserRole.Admin)));
+    
+    options.AddPolicy("CanManageCustomers", p => p.RequireRole(
+        nameof(UserRole.Admin), nameof(UserRole.Manager), nameof(UserRole.Teller)));
+    
 });
 
+// Seed
+
+
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbSeeder.SeedAsync(db);
+}
 
 // Middleware
 app.UseMiddleware<ExceptionMiddleware>();
