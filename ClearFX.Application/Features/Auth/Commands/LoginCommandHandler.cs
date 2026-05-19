@@ -21,7 +21,8 @@ public class LoginCommandHandler(IRepository<User> userRepo, IUnitOfWork uow, IJ
 
         var (accessToken, refreshToken) = jwtService.GenerateTokens(user);
 
-        user.RefreshToken       = BCrypt.Net.BCrypt.HashPassword(refreshToken);
+        user.RefreshToken = RefreshTokenCommandHandler.HashRefreshToken(refreshToken);
+
         user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
         user.LastLoginAt        = DateTimeOffset.UtcNow;
 

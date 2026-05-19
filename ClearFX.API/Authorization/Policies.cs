@@ -9,4 +9,5 @@ public class Policies
     public const string CanManageRates  = "CanManageRates";
     public const string CanViewAuditLogs = "CanViewAuditLogs";
     public const string CanManageUsers  = "CanManageUsers";
+    public const string CanManageCustomers = "CanManageCustomers";
 }

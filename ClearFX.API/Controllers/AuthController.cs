@@ -2,6 +2,7 @@ using ClearFX.Application.Features.Auth.Commands;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ClearFX.API.Controllers;
 
@@ -18,8 +19,17 @@ public class AuthController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("login")]
+    [EnableRateLimiting("LoginPolicy")]
     [AllowAnonymous]
     public async Task<IActionResult> Login(LoginCommand command)
+    {
+        var result = await mediator.Send(command);
+        return Ok(result);
+    }
+    
+    [HttpPost("refresh-token")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken(RefreshTokenCommand command)
     {
         var result = await mediator.Send(command);
         return Ok(result);
