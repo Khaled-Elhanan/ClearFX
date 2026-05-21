@@ -11,10 +11,13 @@ public class ExchangeRate
     public decimal SellRate { get; set; }
     public decimal Spread => SellRate - BuyRate;
     public RateSource Source { get; set; }
+    public string? ProviderName { get; set; }
+    public string? ExternalReferenceId { get; set; }
+    public DateTimeOffset? FetchedAt { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTimeOffset ValidFrom { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset? ValidTo { get; set; }
-    public Guid SetBy { get; set; }
+    public Guid? SetBy { get; set; }
 
     // Nav
     public User? SetByUser { get; set; }

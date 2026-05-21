@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\ExchangeRates\" />
     <Folder Include="Features\Transactions\" />
   </ItemGroup>
 
