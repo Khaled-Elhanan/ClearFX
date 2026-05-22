@@ -4,12 +4,16 @@ using ClearFX.API.Middleware;
 using ClearFX.Application.Behaviors;
 using ClearFX.Application.Common;
 using ClearFX.Application.Features.Auth.Commands;
+using ClearFX.Application.Features.ExchangeRates;
+using ClearFX.Application.Features.ExchangeRates.Providers;
 using ClearFX.Domain.Enums;
 using ClearFX.Domain.Interfaces;
 using ClearFX.Infrastructure.Auth;
+using ClearFX.Infrastructure.ExternalApis;
 using ClearFX.Infrastructure.Persistence;
 using ClearFX.Infrastructure.Repositories;
 using FluentValidation;
+using Hangfire;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -60,6 +64,15 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("MyConnection")));
 
+// Hangfire
+builder.Services.AddHangfire(config =>
+    config.UseSqlServerStorage(
+        builder.Configuration.GetConnectionString("MyConnection")));
+builder.Services.AddHangfireServer();
+
+
+    
+
 // MediatR
 builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(LoginCommand).Assembly));
@@ -67,7 +80,10 @@ builder.Services.AddMediatR(cfg =>
 builder.Services.AddValidatorsFromAssembly(typeof(LoginCommand).Assembly);
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-
+// Rate Provider & Sync
+builder.Services.AddHttpClient<IExchangeRateProvider, ExternalExchangeRateProvider>();
+builder.Services.AddScoped<IRateSyncService, RateSyncService>();
+builder.Services.AddScoped<RateSyncJob>();
 
 
 // Repositories
@@ -149,5 +165,11 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseHangfireDashboard("/hangfire");
+
+RecurringJob.AddOrUpdate<RateSyncJob>(
+    "sync-exchange-rates",
+    job => job.ExecuteAsync(),
+    "*/30 * * * *");
 app.MapControllers();
 app.Run();
